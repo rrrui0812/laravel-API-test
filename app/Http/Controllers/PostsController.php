@@ -3,19 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Models\Post;
 
 class PostsController extends Controller
 {
-//    public function __construct()
-//    {
-//        $this->middleware(['postMiddleware'])->except(['show', 'index']);
-//
-//    }
+    public function __construct()
+    {
+        $this->middleware(['postMiddleware'])->except(['show', 'store', 'index']);
+    }
 
     public function index()
     {
-        return Post::all();
+        $posts = Post::all();
+        return response($posts, Response::HTTP_OK);
     }
 
     public function store(Request $request)
@@ -24,12 +25,14 @@ class PostsController extends Controller
             'title' => 'required',
             'content' => 'required'
         ]);
-        return auth()->user()->posts()->create($content);
+        $post = auth()->user()->posts()->create($content);
+        return response($post, Response::HTTP_CREATED);
     }
 
     public function show($id)
     {
-        return Post::find($id);
+        $post = Post::find($id);
+        return response($post, Response::HTTP_OK);
     }
 
     public function update(Request $request, $id)
@@ -39,17 +42,16 @@ class PostsController extends Controller
             'title' => 'required',
             'content' => 'required'
         ]);
-//        Post::find($id)->update($content);
+//        $post = Post::find($id);
         $post->update($content);
-        return $post;
+        return response($post, Response::HTTP_OK);
     }
 
     public function destroy($id)
     {
         $post = auth()->user()->posts->find($id);
-//        abort_if(is_null($post), \Illuminate\Http\Response::HTTP_NOT_FOUND);
 //        Post::find($id)->delete($id);
-//        $post->delete($id);
-        return response(['data' => $post]);
+        $post->delete($id);
+        return response($post, Response::HTTP_OK);
     }
 }
