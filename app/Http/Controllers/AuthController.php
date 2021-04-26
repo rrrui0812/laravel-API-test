@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-//use Illuminate\Http\Response;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
+//use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller
 {
@@ -29,7 +30,7 @@ class AuthController extends Controller
             'token' => $token
         ];
 
-        return response($response, 201);
+        return response($response, Response::HTTP_CREATED);
 
     }
 
@@ -41,12 +42,11 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $fields['email'])->first();
-//        $user = User::where('email', $fields['email'])->get();
 
         if (!$user || !Hash::check($fields['password'], $user->password)) {
-            return  response([
-               'massage'=>'The provided credentials are incorrect.'
-            ],401);
+            return response([
+                'massage' => 'The provided credentials are incorrect.'
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
         $token = $user->createToken('myapptken')->plainTextToken;
@@ -56,7 +56,7 @@ class AuthController extends Controller
             'token' => $token
         ];
 
-        return response($response, 201);
+        return response($response, Response::HTTP_CREATED);
 
     }
 
@@ -64,8 +64,9 @@ class AuthController extends Controller
     {
         auth()->user()->tokens()->delete();
 
-        return [
+        $response = [
             'message' => 'Logged out'
         ];
+        return response($response, Response::HTTP_OK);
     }
 }

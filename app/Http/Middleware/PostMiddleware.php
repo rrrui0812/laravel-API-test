@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Post;
 use Closure;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -21,9 +22,10 @@ class PostMiddleware
         $postId = $request->route('post');
 //        $post = Post::find($postId)->user_id;
 //        $post_id = $post->user_id;
-//        $user = auth()->user()->getKey();
+//        $user = auth()->user();
 //        $user_id = $user->id;
-        if (auth()->user()->getKey() === Post::find($postId)->user_id) {
+//        if (auth()->user()->getKey() === Post::find($postId)->user_id) {
+        if (Auth::id() === Post::find($postId)->user_id) {
             return $next($request);
 //            return response('TEST', 200);
         }
