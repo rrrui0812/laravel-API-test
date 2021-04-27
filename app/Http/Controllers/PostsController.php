@@ -21,12 +21,27 @@ class PostsController extends Controller
 
     public function store(Request $request)
     {
-        $content = $request->validate([
+//        if($request->hasFile('image')){
+//            if($request->file('image')->isValid()){
+//                $post='123456789';
+//            }else{
+//                $post='987654321';
+//            }
+//        }
+        $this->validate($request, [
             'title' => 'required',
-            'content' => 'required'
+            'content' => 'required',
+            'image' => 'required|mimes:jpg,jpeg,png'
         ]);
-        $post = auth()->user()->posts()->create($content);
-        return response($post, Response::HTTP_CREATED);
+        $image = $request->file('image')->store('images');
+        $content = [
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+            'image' => $image
+        ];
+//        $post = auth()->user()->posts()->create($content);
+
+        return response($content, Response::HTTP_CREATED);
     }
 
     public function show($id)
@@ -40,7 +55,8 @@ class PostsController extends Controller
         $post = auth()->user()->posts->find($id);
         $content = $request->validate([
             'title' => 'required',
-            'content' => 'required'
+            'content' => 'required',
+            'image' => 'required|mimes:jpg,jpeg,png'
         ]);
 //        $post = Post::find($id);
         $post->update($content);

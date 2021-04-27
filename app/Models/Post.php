@@ -14,5 +14,5 @@ class Post extends Model
         return $this->belongsTo('\App\Models\User');
     }
 
-    protected $fillable = ['title', 'content'];
+    protected $fillable = ['title', 'content','image'];
 }
