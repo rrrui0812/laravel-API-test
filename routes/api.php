@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostsController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,7 @@ use App\Http\Controllers\AuthController;
 //Route::apiResource('posts', PostsController::class);
 Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
+
 Route::get('/posts',[PostsController::class,'index']);
 Route::get('/posts/{post}',[PostsController::class,'show']);
 
@@ -26,9 +28,17 @@ Route::get('/posts/{post}',[PostsController::class,'show']);
 Route::group(['middleware' => ['auth:sanctum']], function () {
     //這裡放需要驗證才能做的動作
     Route::post('/logout',[AuthController::class,'logout']);
+
     Route::post('/posts',[PostsController::class,'store']);
     Route::patch('/posts/{post}',[PostsController::class,'update']);
     Route::delete('/posts/{post}',[PostsController::class,'destroy']);
+
+    Route::get('/comments/{post_id}',[CommentsController::class,'index']);
+    Route::post('/comments/{post_id}',[CommentsController::class,'store']);
+    Route::get('/comments/{post_id}/{comment}',[CommentsController::class,'show']);
+    Route::patch('/comments/{post_id}/{comment}',[CommentsController::class,'update']);
+    Route::delete('/comments/{post_id}/{comment}',[CommentsController::class,'destroy']);
+
 });
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
