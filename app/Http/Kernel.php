@@ -65,5 +65,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'postMiddleware' => \App\Http\Middleware\PostMiddleware::class,
+        'commentMiddleware'=>\App\Http\Middleware\CommentMiddleware::class,
     ];
 }

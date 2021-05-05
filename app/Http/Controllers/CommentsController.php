@@ -8,6 +8,11 @@ use App\Models\Comment;
 
 class CommentsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['commentMiddleware'])->except(['index', 'store']);
+    }
+
     public function index($postId)
     {
         $comments = Comment::where('post_id', $postId)->get();
@@ -50,11 +55,8 @@ class CommentsController extends Controller
 
     public function destroy($id)
     {
-        $comment=auth()->user()->comments()->find($id);
+        $comment = auth()->user()->comments()->find($id);
         $comment->delete($id);
-        $response=[
-          'message'  =>'Data deleted'
-        ];
-        return response($response,Response::HTTP_OK);
+        return response('Data deleted', Response::HTTP_OK);
     }
 }
