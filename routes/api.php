@@ -18,26 +18,27 @@ use App\Http\Controllers\CommentsController;
 */
 
 //Route::apiResource('posts', PostsController::class);
-Route::post('/register',[AuthController::class,'register']);
-Route::post('/login',[AuthController::class,'login']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/posts',[PostsController::class,'index']);
-Route::get('/posts/{post}',[PostsController::class,'show']);
+Route::get('/posts', [PostsController::class, 'index']);
+Route::get('/posts/{post}', [PostsController::class, 'show']);
+
+Route::get('/comments/{post_id}', [CommentsController::class, 'index']);
+Route::get('/comments/{comment}', [CommentsController::class, 'show']);
 
 //Route::group(['middleware' => ['auth:sanctum', 'postMiddleware']], function () {
 Route::group(['middleware' => ['auth:sanctum']], function () {
     //這裡放需要驗證才能做的動作
-    Route::post('/logout',[AuthController::class,'logout']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::post('/posts',[PostsController::class,'store']);
-    Route::patch('/posts/{post}',[PostsController::class,'update']);
-    Route::delete('/posts/{post}',[PostsController::class,'destroy']);
+    Route::post('/posts', [PostsController::class, 'store']);
+    Route::patch('/posts/{post}', [PostsController::class, 'update']);
+    Route::delete('/posts/{post}', [PostsController::class, 'destroy']);
 
-    Route::get('/comments/{post_id}',[CommentsController::class,'index']);
-    Route::post('/comments/{post_id}',[CommentsController::class,'store']);
-    Route::get('/comments/{comment}',[CommentsController::class,'show']);
-    Route::patch('/comments/{comment}',[CommentsController::class,'update']);
-    Route::delete('/comments/{comment}',[CommentsController::class,'destroy']);
+    Route::post('/comments/{post_id}', [CommentsController::class, 'store']);
+    Route::patch('/comments/{comment}', [CommentsController::class, 'update']);
+    Route::delete('/comments/{comment}', [CommentsController::class, 'destroy']);
 
 });
 

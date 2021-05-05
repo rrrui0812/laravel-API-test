@@ -11,7 +11,7 @@ class PostsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['postMiddleware'])->except(['show', 'store', 'index']);
+        $this->middleware(['postMiddleware'])->except(['index', 'show', 'store']);
     }
 
     public function index()

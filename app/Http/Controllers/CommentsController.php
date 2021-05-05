@@ -10,7 +10,7 @@ class CommentsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['commentMiddleware'])->except(['index', 'store']);
+        $this->middleware(['commentMiddleware'])->except(['index', 'store', 'show']);
     }
 
     public function index($postId)
