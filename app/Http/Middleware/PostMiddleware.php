@@ -27,9 +27,7 @@ class PostMiddleware
 //        if (auth()->user()->getKey() === Post::find($postId)->user_id) {
         if (Auth::id() === Post::find($postId)->user_id) {
             return $next($request);
-//            return response('TEST', 200);
         }
-//        return response('ERROR', 404);
         return response('Not Found.', Response::HTTP_NOT_FOUND);
     }
 }

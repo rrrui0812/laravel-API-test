@@ -13,7 +13,7 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        $fields = $request->validate([
+        $fields = $this->validate($request, [
             'name' => 'required|string',
             'email' => 'required|string|unique:users,email',
             'password' => 'required|string|confirmed',
@@ -22,10 +22,9 @@ class AuthController extends Controller
 
         if ($request->has('avatar')) {
             $avatar = $request->file('avatar')->store('public/avatar');
+        } else {
+            $avatar = 'null';
         }
-//        else {
-//            $avatar = 'null';
-//        }
 
         $user = User::create([
             'name' => $fields['name'],
@@ -48,7 +47,7 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $fields = $request->validate([
+        $fields = $this->validate($request, [
             'email' => 'required|string',
             'password' => 'required|string'
         ]);

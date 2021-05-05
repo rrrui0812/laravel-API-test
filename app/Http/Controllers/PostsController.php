@@ -29,7 +29,7 @@ class PostsController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $image = $request->file('image')->store('public/images');
+            $image = $request->file('image')->store('images');
         } else {
             $image = 'null';
         }
@@ -52,7 +52,7 @@ class PostsController extends Controller
 
     public function update(Request $request, $id)
     {
-        $post = auth()->user()->posts->find($id);
+        $post = auth()->user()->posts()->find($id);
 
         $this->validate($request, [
             'title' => 'required',
@@ -62,9 +62,9 @@ class PostsController extends Controller
 
         if ($request->hasFile('image')) {
             if ($post->image) {
-                $image = Storage::disk('app')->delete($post->image);
+                $image = Storage::disk('public')->delete($post->image);
             }
-            $image = $request->file('image')->store('public/images');
+            $image = $request->file('image')->store('images');
         } else {
             $image = $post->image;
         }
@@ -76,15 +76,15 @@ class PostsController extends Controller
         ];
 //        $post = Post::find($id);
         $post->update($content);
-        return response($content, Response::HTTP_OK);
+        return response($post, Response::HTTP_OK);
     }
 
     public function destroy($id)
     {
-        $post = auth()->user()->posts->find($id);
+        $post = auth()->user()->posts()->find($id);
 //        Post::find($id)->delete($id);
         if ($post->image) {
-            Storage::disk('app')->delete($post->image);
+            Storage::disk('public')->delete($post->image);
         }
         $post->delete($id);
         return response($post, Response::HTTP_OK);

@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar',
     ];
 
     /**
@@ -42,7 +43,13 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function posts(){
+    public function posts()
+    {
         return $this->hasMany('\App\Models\Post');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany('\App\Models\Comment');
     }
 }
