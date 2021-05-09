@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Post;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class PostsController extends Controller
@@ -16,7 +17,9 @@ class PostsController extends Controller
 
     public function index()
     {
-        $posts = Post::all();
+//        $posts = Post::all();
+        $names = DB::table('users')->select('name');
+        $posts = DB::table('users')->select('email')->union($names)->get();
         return response($posts, Response::HTTP_OK);
     }
 

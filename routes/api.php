@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentsController;
+use App\Http\Controllers\VotesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::patch('/comments/{comment}', [CommentsController::class, 'update']);
     Route::delete('/comments/{comment}', [CommentsController::class, 'destroy']);
 
+    Route::post('/votes/{post_id}/{vote}', [VotesController::class, 'like']);
 });
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
