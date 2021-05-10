@@ -24,6 +24,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/posts', [PostsController::class, 'index']);
 Route::get('/posts/{post}', [PostsController::class, 'show']);
+Route::post('/posts/search', [PostsController::class,'search']);
 
 Route::get('/comments/{post_id}', [CommentsController::class, 'index']);
 Route::get('/comments/{comment}', [CommentsController::class, 'show']);

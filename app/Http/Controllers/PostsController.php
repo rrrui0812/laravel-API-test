@@ -12,7 +12,7 @@ class PostsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['postMiddleware'])->except(['index', 'show', 'store']);
+        $this->middleware(['postMiddleware'])->except(['index', 'show', 'store', 'search']);
     }
 
     public function index()
@@ -91,5 +91,16 @@ class PostsController extends Controller
         }
         $post->delete($id);
         return response($post, Response::HTTP_OK);
+    }
+
+    public function search(Request $request)
+    {
+        $this->validate($request, [
+            'content' => 'required',
+        ]);
+        $response = Post::where('title', 'like', '%' . $request->content . '%')
+            ->orWhere('content', 'like', '%' . $request->content . '%')
+            ->get();
+        return response($response,Response::HTTP_OK);
     }
 }
