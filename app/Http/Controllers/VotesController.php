@@ -9,18 +9,27 @@ use Illuminate\Support\Facades\Auth;
 
 class VotesController extends Controller
 {
-    public function like($postId, $vote)
+    public function vote($postId, $vote)
     {
-        $like = Vote::where('user_id', Auth::id())->where('post_id', $postId)->first();
-        if (is_null($like)) {
+        $voted = Vote::where('user_id', Auth::id())->where('post_id', $postId)->first();
+        if (is_null($voted)) {
             $content = [
                 'post_id' => $postId,
                 'state' => $vote
             ];
-            $like = auth()->user()->votes()->create($content);
-        } else {
-            $like->delete($like->id);
+            $voted = auth()->user()->votes()->create($content);
+        } elseif ($voted->state != $vote) {
+            $content = [
+                'post_id' => $postId,
+                'state' => $vote
+            ];
+            $voted->update($content);
+        } elseif ($voted->state == $vote) {
+            $voted->delete($voted->id);
+            $voted = [
+              'message' => 'cancelled vote'
+            ];
         }
-        return response($like, Response::HTTP_OK);
+        return response($voted, Response::HTTP_OK);
     }
 }

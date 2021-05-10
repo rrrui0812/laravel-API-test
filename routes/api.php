@@ -41,7 +41,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::patch('/comments/{comment}', [CommentsController::class, 'update']);
     Route::delete('/comments/{comment}', [CommentsController::class, 'destroy']);
 
-    Route::post('/votes/{post_id}/{vote}', [VotesController::class, 'like']);
+    Route::post('/votes/{post_id}/{vote}', [VotesController::class, 'vote']);
 });
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
