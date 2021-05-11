@@ -17,9 +17,7 @@ class PostsController extends Controller
 
     public function index()
     {
-//        $posts = Post::all();
-        $names = DB::table('users')->select('name');
-        $posts = DB::table('users')->select('email')->union($names)->get();
+        $posts = Post::all();
         return response($posts, Response::HTTP_OK);
     }
 

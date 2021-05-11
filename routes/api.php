@@ -21,10 +21,11 @@ use App\Http\Controllers\VotesController;
 //Route::apiResource('posts', PostsController::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/profile/{user_id}', [AuthController::class, 'profile']);
 
 Route::get('/posts', [PostsController::class, 'index']);
 Route::get('/posts/{post}', [PostsController::class, 'show']);
-Route::post('/posts/search', [PostsController::class,'search']);
+Route::post('/posts/search', [PostsController::class, 'search']);
 
 Route::get('/comments/{post_id}', [CommentsController::class, 'index']);
 Route::get('/comments/{comment}', [CommentsController::class, 'show']);

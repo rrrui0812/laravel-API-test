@@ -8,8 +8,6 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-//use Illuminate\Support\Facades\Response;
-
 class AuthController extends Controller
 {
     public function register(Request $request)
@@ -61,7 +59,7 @@ class AuthController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        DB::table('personal_access_tokens')->where('tokenable_id',$user->id)->delete();
+        DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
 
         $token = $user->createToken('myapptken')->plainTextToken;
 
@@ -83,4 +81,11 @@ class AuthController extends Controller
         ];
         return response($response, Response::HTTP_OK);
     }
+
+    public function profile($userId)
+    {
+        $profile = User::where('id', $userId)->first();
+        return response($profile, Response::HTTP_OK);
+    }
+
 }
