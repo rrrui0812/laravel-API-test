@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Post;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class PostsController extends Controller
@@ -13,11 +15,49 @@ class PostsController extends Controller
     public function __construct()
     {
         $this->middleware(['postMiddleware'])->except(['index', 'show', 'store', 'search']);
+//        $this->middleware(['checkPostMiddleware'])->except(['store', 'update', 'destroy']);
     }
 
     public function index()
     {
-        $posts = Post::all();
+//        $posts = Post::all();
+
+        $commentCount = DB::table('comments')
+            ->select('post_id', DB::raw('count(*) as comment_count'))
+            ->groupBy('post_id');
+
+        $likeCount = DB::table('votes')
+            ->select('post_id', DB::raw('count(*) as like_count'))
+            ->where('state', '=', 'like')
+            ->groupBy('post_id');
+
+        $dislikeCount = DB::table('votes')
+            ->select('post_id', DB::raw('count(*) as dislike_count'))
+            ->where('state', '=', 'dislike')
+            ->groupBy('post_id');
+
+        $posts = DB::table('posts')
+            ->leftJoin('users', 'user_id', '=', 'users.id')
+            ->leftjoinSub($commentCount, 'comment_count', function ($join) {
+                $join->on('posts.id', '=', 'comment_count.post_id');
+            })
+            ->leftjoinSub($likeCount, 'like_count', function ($join) {
+                $join->on('posts.id', '=', 'like_count.post_id');
+            })
+            ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
+                $join->on('posts.id', '=', 'dislike_count.post_id');
+            })
+            ->select(
+                'posts.*',
+                'users.name',
+                'users.avatar',
+                DB::Raw('IFNULL( `comment_count`.`comment_count` , 0 ) as comment_count'),
+                DB::Raw('IFNULL( `like_count`.`like_count` , 0 ) as like_count'),
+                DB::Raw('IFNULL( `dislike_count`.`dislike_count` , 0 ) as dislike_count'),
+            )
+            ->orderBy('posts.id')
+            ->get();
+
         return response($posts, Response::HTTP_OK);
     }
 
@@ -48,6 +88,9 @@ class PostsController extends Controller
     public function show($id)
     {
         $post = Post::find($id);
+        if (!$post) {
+            return response('Not Found', Response::HTTP_NOT_FOUND);
+        }
         return response($post, Response::HTTP_OK);
     }
 
@@ -75,7 +118,7 @@ class PostsController extends Controller
             'content' => $request->input('content'),
             'image' => $image
         ];
-//        $post = Post::find($id);
+
         $post->update($content);
         return response($post, Response::HTTP_OK);
     }
@@ -83,7 +126,7 @@ class PostsController extends Controller
     public function destroy($id)
     {
         $post = auth()->user()->posts()->find($id);
-//        Post::find($id)->delete($id);
+
         if ($post->image) {
             Storage::disk('public')->delete($post->image);
         }
@@ -96,9 +139,15 @@ class PostsController extends Controller
         $this->validate($request, [
             'content' => 'required',
         ]);
-        $response = Post::where('title', 'like', '%' . $request->content . '%')
-            ->orWhere('content', 'like', '%' . $request->content . '%')
+
+        $content = $request->input('content');
+        $response = Post::where('title', 'like', '%' . $content . '%')
+            ->orWhere('content', 'like', '%' . $content . '%')
             ->get();
-        return response($response,Response::HTTP_OK);
+
+        if ($response->isEmpty()) {
+            return response('Not Found', Response::HTTP_NOT_FOUND);
+        }
+        return response($response, Response::HTTP_OK);
     }
 }
