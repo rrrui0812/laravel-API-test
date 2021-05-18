@@ -110,7 +110,7 @@ class PostsController extends Controller
             ->where('post_id', '=', $id)
             ->groupBy('post_id');
 
-        $posts = DB::table('posts')
+        $postData = DB::table('posts')
             ->where('posts.id','=',$id)
             ->leftJoin('users', 'user_id', '=', 'users.id')
             ->leftjoinSub($commentCount, 'comment_count', function ($join) {
@@ -136,7 +136,7 @@ class PostsController extends Controller
         $comments=$post->comment()->where('post_id',$id)->get();
 
         $response = [
-            'post'=>$posts,
+            'post'=>$postData,
             'comments'=>$comments
         ];
         return response($response, Response::HTTP_OK);
@@ -154,7 +154,7 @@ class PostsController extends Controller
 
         if ($request->hasFile('image')) {
             if ($post->image) {
-                $image = Storage::disk('public')->delete($post->image);
+                Storage::disk('public')->delete($post->image);
             }
             $image = $request->file('image')->store('images');
         } else {
@@ -168,7 +168,56 @@ class PostsController extends Controller
         ];
 
         $post->update($content);
-        return response($post, Response::HTTP_OK);
+
+        $commentCount = DB::table('comments')
+            ->select('post_id', DB::raw('count(*) as comment_count'))
+            ->where('post_id', '=', $id)
+            ->groupBy('post_id');
+
+        $likeCount = DB::table('votes')
+            ->select('post_id', DB::raw('count(*) as like_count'))
+            ->where('state', '=', 'like')
+            ->where('post_id', '=', $id)
+            ->groupBy('post_id');
+
+        $dislikeCount = DB::table('votes')
+            ->select('post_id', DB::raw('count(*) as dislike_count'))
+            ->where('state', '=', 'dislike')
+            ->where('post_id', '=', $id)
+            ->groupBy('post_id');
+
+        $postData = DB::table('posts')
+            ->where('posts.id','=',$id)
+            ->leftJoin('users', 'user_id', '=', 'users.id')
+            ->leftjoinSub($commentCount, 'comment_count', function ($join) {
+                $join->on('posts.id', '=', 'comment_count.post_id');
+            })
+            ->leftjoinSub($likeCount, 'like_count', function ($join) {
+                $join->on('posts.id', '=', 'like_count.post_id');
+            })
+            ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
+                $join->on('posts.id', '=', 'dislike_count.post_id');
+            })
+            ->select(
+                'posts.*',
+                'users.name',
+                'users.avatar',
+                DB::Raw('IFNULL( `comment_count`.`comment_count` , 0 ) as comment_count'),
+                DB::Raw('IFNULL( `like_count`.`like_count` , 0 ) as like_count'),
+                DB::Raw('IFNULL( `dislike_count`.`dislike_count` , 0 ) as dislike_count'),
+            )
+            ->orderBy('posts.id')
+            ->get();
+
+        $comments=$post->comment()->where('post_id',$id)->get();
+
+        $response = [
+            'post'=>$postData,
+            'comments'=>$comments
+        ];
+
+
+        return response($response, Response::HTTP_OK);
     }
 
     public function destroy($id)
@@ -179,18 +228,56 @@ class PostsController extends Controller
             Storage::disk('public')->delete($post->image);
         }
         $post->delete($id);
-        return response($post, Response::HTTP_OK);
+        return response('Post has deleted.', Response::HTTP_OK);
     }
 
     public function search($search)
     {
-        $response = Post::where('title', 'like', '%' . $search . '%')
-            ->orWhere('content', 'like', '%' . $search . '%')
+//        $response = Post::where('title', 'like', '%' . $search . '%')
+//            ->orWhere('content', 'like', '%' . $search . '%')
+//            ->get();
+
+        $commentCount = DB::table('comments')
+            ->select('post_id', DB::raw('count(*) as comment_count'))
+            ->groupBy('post_id');
+
+        $likeCount = DB::table('votes')
+            ->select('post_id', DB::raw('count(*) as like_count'))
+            ->where('state', '=', 'like')
+            ->groupBy('post_id');
+
+        $dislikeCount = DB::table('votes')
+            ->select('post_id', DB::raw('count(*) as dislike_count'))
+            ->where('state', '=', 'dislike')
+            ->groupBy('post_id');
+
+        $postData = DB::table('posts')
+            ->where('posts.title','like','%'.$search.'%')
+            ->orwhere('posts.content','like','%'.$search.'%')
+            ->leftJoin('users', 'user_id', '=', 'users.id')
+            ->leftjoinSub($commentCount, 'comment_count', function ($join) {
+                $join->on('posts.id', '=', 'comment_count.post_id');
+            })
+            ->leftjoinSub($likeCount, 'like_count', function ($join) {
+                $join->on('posts.id', '=', 'like_count.post_id');
+            })
+            ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
+                $join->on('posts.id', '=', 'dislike_count.post_id');
+            })
+            ->select(
+                'posts.*',
+                'users.name',
+                'users.avatar',
+                DB::Raw('IFNULL( `comment_count`.`comment_count` , 0 ) as comment_count'),
+                DB::Raw('IFNULL( `like_count`.`like_count` , 0 ) as like_count'),
+                DB::Raw('IFNULL( `dislike_count`.`dislike_count` , 0 ) as dislike_count'),
+            )
+            ->orderBy('posts.id')
             ->get();
 
-        if ($response->isEmpty()) {
+        if ($postData->isEmpty()) {
             return response('Not Found', Response::HTTP_NOT_FOUND);
         }
-        return response($response, Response::HTTP_OK);
+        return response($postData, Response::HTTP_OK);
     }
 }
