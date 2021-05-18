@@ -22,7 +22,7 @@ class CheckPostMiddleware
 //        if (isset($response)){
 //            return response('404 CCCC',Response::HTTP_NOT_FOUND);
 //        }
-//        echo $response;
+        echo $response;
         var_dump($response);
         return $response;
     }

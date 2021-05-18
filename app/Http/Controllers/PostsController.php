@@ -6,9 +6,12 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Post;
+use App\Models\Comment;
+use App\Models\Vote;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use voku\helper\ASCII;
 
 class PostsController extends Controller
 {
@@ -89,7 +92,54 @@ class PostsController extends Controller
         if (!$post) {
             return response('Not Found', Response::HTTP_NOT_FOUND);
         }
-        return response($post, Response::HTTP_OK);
+
+        $commentCount = DB::table('comments')
+            ->select('post_id', DB::raw('count(*) as comment_count'))
+            ->where('post_id', '=', $id)
+            ->groupBy('post_id');
+
+        $likeCount = DB::table('votes')
+            ->select('post_id', DB::raw('count(*) as like_count'))
+            ->where('state', '=', 'like')
+            ->where('post_id', '=', $id)
+            ->groupBy('post_id');
+
+        $dislikeCount = DB::table('votes')
+            ->select('post_id', DB::raw('count(*) as dislike_count'))
+            ->where('state', '=', 'dislike')
+            ->where('post_id', '=', $id)
+            ->groupBy('post_id');
+
+        $posts = DB::table('posts')
+            ->where('posts.id','=',$id)
+            ->leftJoin('users', 'user_id', '=', 'users.id')
+            ->leftjoinSub($commentCount, 'comment_count', function ($join) {
+                $join->on('posts.id', '=', 'comment_count.post_id');
+            })
+            ->leftjoinSub($likeCount, 'like_count', function ($join) {
+                $join->on('posts.id', '=', 'like_count.post_id');
+            })
+            ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
+                $join->on('posts.id', '=', 'dislike_count.post_id');
+            })
+            ->select(
+                'posts.*',
+                'users.name',
+                'users.avatar',
+                DB::Raw('IFNULL( `comment_count`.`comment_count` , 0 ) as comment_count'),
+                DB::Raw('IFNULL( `like_count`.`like_count` , 0 ) as like_count'),
+                DB::Raw('IFNULL( `dislike_count`.`dislike_count` , 0 ) as dislike_count'),
+            )
+            ->orderBy('posts.id')
+            ->get();
+
+        $comments=$post->comment()->where('post_id',$id)->get();
+
+        $response = [
+            'post'=>$posts,
+            'comments'=>$comments
+        ];
+        return response($response, Response::HTTP_OK);
     }
 
     public function update(Request $request, $id)

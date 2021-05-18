@@ -14,6 +14,11 @@ class Post extends Model
         return $this->belongsTo('\App\Models\User');
     }
 
+    public function comment()
+    {
+        return $this->hasMany('\App\Models\Comment');
+    }
+
     public function vote()
     {
         return $this->hasOne('\App\Model\Post');
@@ -23,5 +28,5 @@ class Post extends Model
 //        return $this->where('id', $value)->firstOrFail();
 //    }
 
-    protected $fillable = ['title', 'content','image'];
+    protected $fillable = ['title', 'content', 'image'];
 }
