@@ -31,7 +31,7 @@ Route::get('/posts/{post}', [PostsController::class, 'show']);
 Route::get('/posts/search/{search}', [PostsController::class, 'search']);
 
 Route::get('/comments/{post_id}', [CommentsController::class, 'index']);
-Route::get('/comments/comment/{comment}', [CommentsController::class, 'show']);
+//Route::get('/comments/comment/{comment}', [CommentsController::class, 'show']);
 
 //Route::get();
 

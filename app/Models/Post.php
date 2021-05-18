@@ -14,6 +14,10 @@ class Post extends Model
         return $this->belongsTo('\App\Models\User');
     }
 
+    public function vote()
+    {
+        return $this->hasOne('\App\Model\Post');
+    }
 //    public function resolveRouteBinding($value, $field = null)
 //    {
 //        return $this->where('id', $value)->firstOrFail();

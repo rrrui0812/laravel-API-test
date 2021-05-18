@@ -14,5 +14,10 @@ class Vote extends Model
         return $this->belongsTo('\App\Model\User');
     }
 
+    public function post()
+    {
+        return $this->hasOne('\App\Model\Post');
+    }
+
     protected $fillable = ['post_id', 'state'];
 }

@@ -34,11 +34,11 @@ class CommentsController extends Controller
         return response($comment, Response::HTTP_CREATED);
     }
 
-    public function show($comment_id)
-    {
-        $comment = Comment::where('id', $comment_id)->first();
-        return response($comment, Response::HTTP_OK);
-    }
+//    public function show($comment_id)
+//    {
+//        $comment = Comment::where('id', $comment_id)->first();
+//        return response($comment, Response::HTTP_OK);
+//    }
 
     public function update(Request $request, $id)
     {
