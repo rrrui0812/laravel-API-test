@@ -25,10 +25,15 @@ Route::get('/profile/{user_id}', [AuthController::class, 'profile']);
 
 Route::get('/posts', [PostsController::class, 'index']);
 Route::get('/posts/{post}', [PostsController::class, 'show']);
-Route::post('/posts/search', [PostsController::class, 'search']);
+//Route::get('/posts/{post}', function (\App\Models\Post $post) {
+//    return $post;
+//});
+Route::get('/posts/search/{search}', [PostsController::class, 'search']);
 
 Route::get('/comments/{post_id}', [CommentsController::class, 'index']);
-Route::get('/comments/{comment}', [CommentsController::class, 'show']);
+Route::get('/comments/comment/{comment}', [CommentsController::class, 'show']);
+
+//Route::get();
 
 //Route::group(['middleware' => ['auth:sanctum', 'postMiddleware']], function () {
 Route::group(['middleware' => ['auth:sanctum']], function () {
@@ -40,8 +45,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::delete('/posts/{post}', [PostsController::class, 'destroy']);
 
     Route::post('/comments/{post_id}', [CommentsController::class, 'store']);
-    Route::patch('/comments/{comment}', [CommentsController::class, 'update']);
-    Route::delete('/comments/{comment}', [CommentsController::class, 'destroy']);
+    Route::patch('/comments/comment/{comment}', [CommentsController::class, 'update']);
+    Route::delete('/comments/comment/{comment}', [CommentsController::class, 'destroy']);
 
     Route::post('/votes/{post_id}/{vote}', [VotesController::class, 'vote']);
 });

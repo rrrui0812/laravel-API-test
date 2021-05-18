@@ -20,8 +20,6 @@ class PostsController extends Controller
 
     public function index()
     {
-//        $posts = Post::all();
-
         $commentCount = DB::table('comments')
             ->select('post_id', DB::raw('count(*) as comment_count'))
             ->groupBy('post_id');
@@ -134,15 +132,10 @@ class PostsController extends Controller
         return response($post, Response::HTTP_OK);
     }
 
-    public function search(Request $request)
+    public function search($search)
     {
-        $this->validate($request, [
-            'content' => 'required',
-        ]);
-
-        $content = $request->input('content');
-        $response = Post::where('title', 'like', '%' . $content . '%')
-            ->orWhere('content', 'like', '%' . $content . '%')
+        $response = Post::where('title', 'like', '%' . $search . '%')
+            ->orWhere('content', 'like', '%' . $search . '%')
             ->get();
 
         if ($response->isEmpty()) {

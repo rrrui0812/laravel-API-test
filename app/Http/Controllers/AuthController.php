@@ -20,7 +20,7 @@ class AuthController extends Controller
         ]);
 
         if ($request->has('avatar')) {
-            $avatar = $request->file('avatar')->store('public/avatar');
+            $avatar = $request->file('avatar')->store('avatar');
         } else {
             $avatar = 'null';
         }
@@ -52,7 +52,6 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $fields['email'])->first();
-
         if (!$user || !Hash::check($fields['password'], $user->password)) {
             return response([
                 'massage' => 'The provided credentials are incorrect.'
@@ -85,6 +84,9 @@ class AuthController extends Controller
     public function profile($userId)
     {
         $profile = User::where('id', $userId)->first();
+        if (!$profile) {
+            return response('Not Found', Response::HTTP_NOT_FOUND);
+        }
         return response($profile, Response::HTTP_OK);
     }
 

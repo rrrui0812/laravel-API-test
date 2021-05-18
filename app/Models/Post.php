@@ -14,5 +14,10 @@ class Post extends Model
         return $this->belongsTo('\App\Models\User');
     }
 
+//    public function resolveRouteBinding($value, $field = null)
+//    {
+//        return $this->where('id', $value)->firstOrFail();
+//    }
+
     protected $fillable = ['title', 'content','image'];
 }

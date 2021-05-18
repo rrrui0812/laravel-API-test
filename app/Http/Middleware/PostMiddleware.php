@@ -7,6 +7,7 @@ use Closure;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
 
 class PostMiddleware
 {
@@ -20,14 +21,15 @@ class PostMiddleware
     public function handle(Request $request, Closure $next)
     {
         $postId = $request->route('post');
-//        $post = Post::find($postId)->user_id;
-//        $post_id = $post->user_id;
-//        $user = auth()->user();
-//        $user_id = $user->id;
-//        if (auth()->user()->getKey() === Post::find($postId)->user_id) {
+
+        if (!Post::find($postId)) {
+            return response('Not Found.', Response::HTTP_NOT_FOUND);
+        }
+
         if (Auth::id() === Post::find($postId)->user_id) {
             return $next($request);
         }
         return response('Not Found.', Response::HTTP_NOT_FOUND);
     }
+
 }

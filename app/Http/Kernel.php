@@ -2,7 +2,8 @@
 
 namespace App\Http;
 
-use App\Http\Controllers\PostsController;
+//use App\Http\Controllers\PostsController;
+use App\Http\Middleware\CheckPostMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -65,6 +66,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'postMiddleware' => \App\Http\Middleware\PostMiddleware::class,
+//        'checkPostMiddleware'=> \App\Http\Middleware\CheckPostMiddleware::class,
         'commentMiddleware'=>\App\Http\Middleware\CommentMiddleware::class,
     ];
 }
