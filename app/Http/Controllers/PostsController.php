@@ -11,7 +11,6 @@ use App\Models\Vote;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use voku\helper\ASCII;
 
 class PostsController extends Controller
 {
@@ -111,7 +110,7 @@ class PostsController extends Controller
             ->groupBy('post_id');
 
         $postData = DB::table('posts')
-            ->where('posts.id','=',$id)
+            ->where('posts.id', '=', $id)
             ->leftJoin('users', 'user_id', '=', 'users.id')
             ->leftjoinSub($commentCount, 'comment_count', function ($join) {
                 $join->on('posts.id', '=', 'comment_count.post_id');
@@ -133,11 +132,11 @@ class PostsController extends Controller
             ->orderBy('posts.id')
             ->get();
 
-        $comments=$post->comment()->where('post_id',$id)->get();
+        $comments = $post->comment()->where('post_id', $id)->get();
 
         $response = [
-            'post'=>$postData,
-            'comments'=>$comments
+            'post' => $postData,
+            'comments' => $comments
         ];
         return response($response, Response::HTTP_OK);
     }
@@ -187,7 +186,7 @@ class PostsController extends Controller
             ->groupBy('post_id');
 
         $postData = DB::table('posts')
-            ->where('posts.id','=',$id)
+            ->where('posts.id', '=', $id)
             ->leftJoin('users', 'user_id', '=', 'users.id')
             ->leftjoinSub($commentCount, 'comment_count', function ($join) {
                 $join->on('posts.id', '=', 'comment_count.post_id');
@@ -209,11 +208,11 @@ class PostsController extends Controller
             ->orderBy('posts.id')
             ->get();
 
-        $comments=$post->comment()->where('post_id',$id)->get();
+        $comments = $post->comment()->where('post_id', $id)->get();
 
         $response = [
-            'post'=>$postData,
-            'comments'=>$comments
+            'post' => $postData,
+            'comments' => $comments
         ];
 
 
@@ -228,7 +227,12 @@ class PostsController extends Controller
             Storage::disk('public')->delete($post->image);
         }
         $post->delete($id);
-        return response('Post has deleted.', Response::HTTP_OK);
+
+        $response = [
+            'message' => 'Post Has Deleted.'
+        ];
+
+        return response($response, Response::HTTP_OK);
     }
 
     public function search($search)
@@ -252,8 +256,8 @@ class PostsController extends Controller
             ->groupBy('post_id');
 
         $postData = DB::table('posts')
-            ->where('posts.title','like','%'.$search.'%')
-            ->orwhere('posts.content','like','%'.$search.'%')
+            ->where('posts.title', 'like', '%' . $search . '%')
+            ->orwhere('posts.content', 'like', '%' . $search . '%')
             ->leftJoin('users', 'user_id', '=', 'users.id')
             ->leftjoinSub($commentCount, 'comment_count', function ($join) {
                 $join->on('posts.id', '=', 'comment_count.post_id');
@@ -276,7 +280,10 @@ class PostsController extends Controller
             ->get();
 
         if ($postData->isEmpty()) {
-            return response('Not Found', Response::HTTP_NOT_FOUND);
+            $response = [
+                'message' => 'Not Found.'
+            ];
+            return response($response, Response::HTTP_NOT_FOUND);
         }
         return response($postData, Response::HTTP_OK);
     }
