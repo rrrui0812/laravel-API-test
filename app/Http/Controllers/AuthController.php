@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -16,7 +18,7 @@ class AuthController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|unique:users,email',
             'password' => 'required|string|confirmed',
-            'avatar' => 'nullable|mimes:jpg,jpeg,png'
+            'avatar' => 'nullable|mimes:jpg,jpeg,png|max:1024'
         ]);
 
         if ($request->has('avatar')) {
@@ -81,7 +83,32 @@ class AuthController extends Controller
         return response($response, Response::HTTP_OK);
     }
 
-    public function profile($userId)
+    public function updateProfile(Request $request)
+    {
+        $fields = $this->validate($request, [
+            'name' => 'required|string',
+            'avatar' => 'nullable|mimes:jpg,jpeg,png|max:1024'
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            if (auth()->user()->avatar != 'null') {
+                Storage::disk('public')->delete(auth()->user()->avatar);
+            }
+            $avatar = $request->file('avatar')->store('avatar');
+        } else {
+            $avatar = auth()->user()->avatar;
+        }
+
+        auth()->user()->update([
+            'name' => $fields['name'],
+            'avatar' => $avatar
+        ]);
+        $user = auth()->user();
+        return response($user, Response::HTTP_OK);
+    }
+
+
+    public function getProfile($userId)
     {
         $profile = User::where('id', $userId)->first();
         if (!$profile) {

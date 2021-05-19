@@ -64,7 +64,7 @@ class PostsController extends Controller
         $this->validate($request, [
             'title' => 'required',
             'content' => 'required',
-            'image' => 'nullable|mimes:jpg,jpeg,png'
+            'image' => 'nullable|mimes:jpg,jpeg,png|max:1024'
         ]);
 
         if ($request->hasFile('image')) {
@@ -146,11 +146,11 @@ class PostsController extends Controller
         $this->validate($request, [
             'title' => 'required',
             'content' => 'required',
-            'image' => 'nullable|mimes:jpg,jpeg,png'
+            'image' => 'nullable|mimes:jpg,jpeg,png|max:1024'
         ]);
 
         if ($request->hasFile('image')) {
-            if ($post->image) {
+            if ($post->image != 'null') {
                 Storage::disk('public')->delete($post->image);
             }
             $image = $request->file('image')->store('images');

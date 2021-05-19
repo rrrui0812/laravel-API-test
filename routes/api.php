@@ -21,7 +21,7 @@ use App\Http\Controllers\VotesController;
 //Route::apiResource('posts', PostsController::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/profile/{user_id}', [AuthController::class, 'profile']);
+Route::get('/profile/{user_id}', [AuthController::class, 'getProfile']);
 
 Route::get('/posts', [PostsController::class, 'index']);
 Route::get('/posts/{post}', [PostsController::class, 'show']);
@@ -36,6 +36,7 @@ Route::get('/comments/{post_id}', [CommentsController::class, 'index']);
 //Route::group(['middleware' => ['auth:sanctum', 'postMiddleware']], function () {
 Route::group(['middleware' => ['auth:sanctum']], function () {
     //這裡放需要驗證才能做的動作
+    Route::patch('/profile',[AuthController::class,'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::post('/posts', [PostsController::class, 'store']);
