@@ -11,12 +11,12 @@ class Vote extends Model
 
     public function user()
     {
-        return $this->belongsTo('\App\Model\User');
+        return $this->belongsTo('\App\Models\User');
     }
 
     public function post()
     {
-        return $this->hasOne('\App\Model\Post');
+        return $this->belongsTo('\App\Models\Post');
     }
 
     protected $fillable = ['post_id', 'state'];

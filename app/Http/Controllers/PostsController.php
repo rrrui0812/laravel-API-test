@@ -6,8 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Post;
-use App\Models\Comment;
-use App\Models\Vote;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -215,7 +213,6 @@ class PostsController extends Controller
             'comments' => $comments
         ];
 
-
         return response($response, Response::HTTP_OK);
     }
 
@@ -227,7 +224,8 @@ class PostsController extends Controller
             Storage::disk('public')->delete($post->image);
         }
         $post->delete($id);
-
+        $post->comment()->where('post_id', $id)->delete();
+        $post->vote()->where('post_id', $id)->delete();
         $response = [
             'message' => 'Post Has Deleted.'
         ];
@@ -237,10 +235,6 @@ class PostsController extends Controller
 
     public function search($search)
     {
-//        $response = Post::where('title', 'like', '%' . $search . '%')
-//            ->orWhere('content', 'like', '%' . $search . '%')
-//            ->get();
-
         $commentCount = DB::table('comments')
             ->select('post_id', DB::raw('count(*) as comment_count'))
             ->groupBy('post_id');

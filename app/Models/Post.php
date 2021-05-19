@@ -21,7 +21,7 @@ class Post extends Model
 
     public function vote()
     {
-        return $this->hasOne('\App\Model\Post');
+        return $this->hasMany('\App\Models\Vote');
     }
 //    public function resolveRouteBinding($value, $field = null)
 //    {
