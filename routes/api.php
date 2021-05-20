@@ -36,6 +36,7 @@ Route::get('/comments/{post_id}', [CommentsController::class, 'index']);
 //Route::group(['middleware' => ['auth:sanctum', 'postMiddleware']], function () {
 Route::group(['middleware' => ['auth:sanctum']], function () {
     //這裡放需要驗證才能做的動作
+    Route::get('/profile',[AuthController::class,'showProfile']);
     Route::patch('/profile',[AuthController::class,'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 

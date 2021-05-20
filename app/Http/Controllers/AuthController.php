@@ -83,6 +83,12 @@ class AuthController extends Controller
         return response($response, Response::HTTP_OK);
     }
 
+    public function showProfile()
+    {
+        $user = auth()->user();
+        return response($user, Response::HTTP_OK);
+    }
+
     public function updateProfile(Request $request)
     {
         $fields = $this->validate($request, [
@@ -110,11 +116,30 @@ class AuthController extends Controller
 
     public function getProfile($userId)
     {
-        $profile = User::where('id', $userId)->first();
-        if (!$profile) {
-            return response('Not Found', Response::HTTP_NOT_FOUND);
-        }
-        return response($profile, Response::HTTP_OK);
+//        $profile = User::where('id', $userId)->select('name','avatar')->first();
+//        if (!$profile) {
+//            return response('Not Found', Response::HTTP_NOT_FOUND);
+//        }
+        $user = User::find($userId);
+        $postCount = $user->posts()->count();
+        $commentsCount=$user->comments()->count();
+        $likeCount = $user->votes()->where('state','like')->count();
+        $dislikeCount = $user->votes()->where('state','dislike')->count();
+        $userData = [
+            'name'=>$user->name,
+            'avatar'=>$user->avatar,
+            'post_count'=>$postCount,
+            'comments_count'=>$commentsCount,
+            'like_count'=>$likeCount,
+            'dislike_count'=>$dislikeCount
+        ];
+        $posts=$user->posts()->paginate(10);
+
+        $response=[
+            'user'=>$userData,
+            'posts'=>$posts
+        ];
+        return response($response, Response::HTTP_OK);
     }
 
 }

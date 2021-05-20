@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Post;
@@ -128,9 +127,9 @@ class PostsController extends Controller
                 DB::Raw('IFNULL( `dislike_count`.`dislike_count` , 0 ) as dislike_count'),
             )
             ->orderBy('posts.id')
-            ->get();
+            ->first();
 
-        $comments = $post->comment()->where('post_id', $id)->get();
+        $comments = $post->comments()->where('post_id', $id)->get();
 
         $response = [
             'post' => $postData,
@@ -206,7 +205,7 @@ class PostsController extends Controller
             ->orderBy('posts.id')
             ->get();
 
-        $comments = $post->comment()->where('post_id', $id)->get();
+        $comments = $post->comments()->where('post_id', $id)->get();
 
         $response = [
             'post' => $postData,
@@ -224,7 +223,7 @@ class PostsController extends Controller
             Storage::disk('public')->delete($post->image);
         }
         $post->delete($id);
-        $post->comment()->where('post_id', $id)->delete();
+        $post->comments()->where('post_id', $id)->delete();
         $post->vote()->where('post_id', $id)->delete();
         $response = [
             'message' => 'Post Has Deleted.'
