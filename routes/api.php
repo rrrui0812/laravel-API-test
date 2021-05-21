@@ -32,10 +32,6 @@ Route::get('/posts/{post}', [PostsController::class, 'show']);
 //});
 Route::get('/posts/search/{search}', [PostsController::class, 'search']);
 
-//CommentsController
-Route::get('/comments/{post_id}', [CommentsController::class, 'index']);
-//Route::get('/comments/comment/{comment}', [CommentsController::class, 'show']);
-
 Route::group(['middleware' => ['auth:sanctum']], function () {
     //這裡放需要驗證才能做的動作
     //AuthController

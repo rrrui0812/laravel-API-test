@@ -10,13 +10,7 @@ class CommentsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['commentMiddleware'])->except(['index', 'store', 'show']);
-    }
-
-    public function index($postId)
-    {
-        $comments = Comment::where('post_id', $postId)->get();
-        return response($comments, Response::HTTP_OK);
+        $this->middleware(['commentMiddleware'])->except(['store']);
     }
 
     public function store(Request $request, $postId)
@@ -33,12 +27,6 @@ class CommentsController extends Controller
 
         return response($comment, Response::HTTP_CREATED);
     }
-
-//    public function show($comment_id)
-//    {
-//        $comment = Comment::where('id', $comment_id)->first();
-//        return response($comment, Response::HTTP_OK);
-//    }
 
     public function update(Request $request, $id)
     {

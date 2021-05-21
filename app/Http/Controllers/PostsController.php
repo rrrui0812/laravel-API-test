@@ -14,7 +14,6 @@ class PostsController extends Controller
     public function __construct()
     {
         $this->middleware(['postMiddleware'])->except(['index', 'show', 'store', 'search']);
-//        $this->middleware(['checkPostMiddleware'])->except(['store', 'update', 'destroy']);
     }
 
     public function index()
@@ -24,14 +23,16 @@ class PostsController extends Controller
             ->groupBy('post_id');
 
         $likeCount = DB::table('votes')
-            ->select('post_id', DB::raw('count(*) as like_count'))
+            ->select('voteable_id', DB::raw('count(*) as like_count'))
+            ->where('voteable_type','App\Models\Post')
             ->where('state', '=', 'like')
-            ->groupBy('post_id');
+            ->groupBy('voteable_id');
 
         $dislikeCount = DB::table('votes')
-            ->select('post_id', DB::raw('count(*) as dislike_count'))
+            ->select('voteable_id', DB::raw('count(*) as dislike_count'))
+            ->where('voteable_type','App\Models\Post')
             ->where('state', '=', 'dislike')
-            ->groupBy('post_id');
+            ->groupBy('voteable_id');
 
         $posts = DB::table('posts')
             ->leftJoin('users', 'user_id', '=', 'users.id')
@@ -39,10 +40,10 @@ class PostsController extends Controller
                 $join->on('posts.id', '=', 'comment_count.post_id');
             })
             ->leftjoinSub($likeCount, 'like_count', function ($join) {
-                $join->on('posts.id', '=', 'like_count.post_id');
+                $join->on('posts.id', '=', 'like_count.voteable_id');
             })
             ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
-                $join->on('posts.id', '=', 'dislike_count.post_id');
+                $join->on('posts.id', '=', 'dislike_count.voteable_id');
             })
             ->select(
                 'posts.*',
@@ -95,16 +96,18 @@ class PostsController extends Controller
             ->groupBy('post_id');
 
         $likeCount = DB::table('votes')
-            ->select('post_id', DB::raw('count(*) as like_count'))
+            ->select('voteable_id', DB::raw('count(*) as like_count'))
+            ->where('voteable_type','App\Models\Post')
             ->where('state', '=', 'like')
-            ->where('post_id', '=', $id)
-            ->groupBy('post_id');
+            ->where('voteable_id', '=', $id)
+            ->groupBy('voteable_id');
 
         $dislikeCount = DB::table('votes')
-            ->select('post_id', DB::raw('count(*) as dislike_count'))
+            ->select('voteable_id', DB::raw('count(*) as dislike_count'))
+            ->where('voteable_type','App\Models\Post')
             ->where('state', '=', 'dislike')
-            ->where('post_id', '=', $id)
-            ->groupBy('post_id');
+            ->where('voteable_id', '=', $id)
+            ->groupBy('voteable_id');
 
         $postData = DB::table('posts')
             ->where('posts.id', '=', $id)
@@ -113,10 +116,10 @@ class PostsController extends Controller
                 $join->on('posts.id', '=', 'comment_count.post_id');
             })
             ->leftjoinSub($likeCount, 'like_count', function ($join) {
-                $join->on('posts.id', '=', 'like_count.post_id');
+                $join->on('posts.id', '=', 'like_count.voteable_id');
             })
             ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
-                $join->on('posts.id', '=', 'dislike_count.post_id');
+                $join->on('posts.id', '=', 'dislike_count.voteable_id');
             })
             ->select(
                 'posts.*',
@@ -129,11 +132,40 @@ class PostsController extends Controller
             ->orderBy('posts.id')
             ->first();
 
-        $comments = $post->comments()->where('post_id', $id)->get();
+        $commentLikeCount = DB::table('votes')
+            ->select('voteable_id', DB::raw('count(*) as like_count'))
+            ->where('voteable_type','App\Models\Comment')
+            ->where('state', '=', 'like')
+            ->groupBy('voteable_id');
+
+        $commentDislikeCount = DB::table('votes')
+            ->select('voteable_id', DB::raw('count(*) as dislike_count'))
+            ->where('voteable_type','App\Models\Comment')
+            ->where('state', '=', 'dislike')
+            ->groupBy('voteable_id');
+
+        $commentsData = DB::table('comments')
+            ->where('comments.post_id', '=', $id)
+            ->leftJoin('users', 'user_id', '=', 'users.id')
+            ->leftjoinSub($commentLikeCount, 'like_count', function ($join) {
+                $join->on('comments.id', '=', 'like_count.voteable_id');
+            })
+            ->leftjoinSub($commentDislikeCount, 'dislike_count', function ($join) {
+                $join->on('comments.id', '=', 'dislike_count.voteable_id');
+            })
+            ->select(
+                'comments.*',
+                'users.name',
+                'users.avatar',
+                DB::Raw('IFNULL( `like_count`.`like_count` , 0 ) as like_count'),
+                DB::Raw('IFNULL( `dislike_count`.`dislike_count` , 0 ) as dislike_count'),
+            )
+            ->orderBy('comments.id')
+            ->get();
 
         $response = [
             'post' => $postData,
-            'comments' => $comments
+            'comments' => $commentsData
         ];
         return response($response, Response::HTTP_OK);
     }
@@ -171,16 +203,18 @@ class PostsController extends Controller
             ->groupBy('post_id');
 
         $likeCount = DB::table('votes')
-            ->select('post_id', DB::raw('count(*) as like_count'))
+            ->select('voteable_id', DB::raw('count(*) as like_count'))
+            ->where('voteable_type','App\Models\Post')
             ->where('state', '=', 'like')
-            ->where('post_id', '=', $id)
-            ->groupBy('post_id');
+            ->where('voteable_id', '=', $id)
+            ->groupBy('voteable_id');
 
         $dislikeCount = DB::table('votes')
-            ->select('post_id', DB::raw('count(*) as dislike_count'))
+            ->select('voteable_id', DB::raw('count(*) as dislike_count'))
+            ->where('voteable_type','App\Models\Post')
             ->where('state', '=', 'dislike')
-            ->where('post_id', '=', $id)
-            ->groupBy('post_id');
+            ->where('voteable_id', '=', $id)
+            ->groupBy('voteable_id');
 
         $postData = DB::table('posts')
             ->where('posts.id', '=', $id)
@@ -189,10 +223,10 @@ class PostsController extends Controller
                 $join->on('posts.id', '=', 'comment_count.post_id');
             })
             ->leftjoinSub($likeCount, 'like_count', function ($join) {
-                $join->on('posts.id', '=', 'like_count.post_id');
+                $join->on('posts.id', '=', 'like_count.voteable_id');
             })
             ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
-                $join->on('posts.id', '=', 'dislike_count.post_id');
+                $join->on('posts.id', '=', 'dislike_count.voteable_id');
             })
             ->select(
                 'posts.*',
@@ -239,14 +273,16 @@ class PostsController extends Controller
             ->groupBy('post_id');
 
         $likeCount = DB::table('votes')
-            ->select('post_id', DB::raw('count(*) as like_count'))
+            ->select('voteable_id', DB::raw('count(*) as like_count'))
+            ->where('voteable_type','App\Models\Post')
             ->where('state', '=', 'like')
-            ->groupBy('post_id');
+            ->groupBy('voteable_id');
 
         $dislikeCount = DB::table('votes')
-            ->select('post_id', DB::raw('count(*) as dislike_count'))
+            ->select('voteable_id', DB::raw('count(*) as dislike_count'))
+            ->where('voteable_type','App\Models\Post')
             ->where('state', '=', 'dislike')
-            ->groupBy('post_id');
+            ->groupBy('voteable_id');
 
         $postData = DB::table('posts')
             ->where('posts.title', 'like', '%' . $search . '%')
@@ -256,10 +292,10 @@ class PostsController extends Controller
                 $join->on('posts.id', '=', 'comment_count.post_id');
             })
             ->leftjoinSub($likeCount, 'like_count', function ($join) {
-                $join->on('posts.id', '=', 'like_count.post_id');
+                $join->on('posts.id', '=', 'like_count.voteable_id');
             })
             ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
-                $join->on('posts.id', '=', 'dislike_count.post_id');
+                $join->on('posts.id', '=', 'dislike_count.voteable_id');
             })
             ->select(
                 'posts.*',
