@@ -19,5 +19,10 @@ class Comment extends Model
         return $this->belongsTo('\App\Models\Post');
     }
 
+    public function votes()
+    {
+        return $this->morphMany('\App\Models\Vote','voteable');
+    }
+
     protected $fillable = ['content', 'post_id'];
 }

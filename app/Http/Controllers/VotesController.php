@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Vote;
@@ -10,38 +11,52 @@ use Illuminate\Support\Facades\Auth;
 
 class VotesController extends Controller
 {
-    public function vote($postId, $vote)
+    public function vote($voteableType, $voteableId, $state)
     {
-        $voted = Vote::where('user_id', Auth::id())->where('post_id', $postId)->first();
-        if (is_null($voted)) {
-            $content = [
-                'post_id' => $postId,
-                'state' => $vote
+        switch ($voteableType) {
+            case 'Post':
+                $voteable = Post::find($voteableId);
+                break;
+            case 'Comment':
+                $voteable = Comment::find($voteableId);
+                break;
+        }
+        if (!$voteable) {
+            $response = [
+                'message' => $voteableType . ' Not Found.'
             ];
-            $voted = auth()->user()->votes()->create($content);
-        } elseif ($voted->state != $vote) {
-            $content = [
-                'post_id' => $postId,
-                'state' => $vote
+            return response($response, Response::HTTP_NOT_FOUND);
+        }
+        //多態關聯
+        $voted = $voteable->votes()->where('user_id', Auth::id())->first();
+        if (!$voted) {
+            $fields = [
+                'user_id' => Auth::id(),
+                'state' => $state
             ];
-            $voted->update($content);
-        } elseif ($voted->state == $vote) {
-            $voted->delete($voted->id);
+            $voteable->votes()->create($fields);
+            $voted = $voteable->votes()->where('user_id', Auth::id())->first();
+        } elseif ($voted->state != $state) {
+            $fields = [
+                'state' => $state
+            ];
+            $voted->update($fields);
+            $voted = $voteable->votes()->where('user_id', Auth::id())->first();
+        } elseif ($voted->state === $state) {
+            $voted->delete();
             $voted = [
                 'message' => 'cancelled vote'
             ];
         }
-        $likeCount = Vote::where('post_id', $postId)
-            ->where('state', 'like')
-            ->count();
-        $dislikeCount = Vote::where('post_id', $postId)
-            ->where('state', 'dislike')
-            ->count();
+
+        $likeCount = $voteable->votes()->where('state','like')->count();
+        $dislikeCount = $voteable->votes()->where('state','dislike')->count();
         $response = [
             'voted' => $voted,
             'like_count' => $likeCount,
             'dislike_count' => $dislikeCount
         ];
+
         return response($response, Response::HTTP_OK);
     }
 }

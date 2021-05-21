@@ -19,10 +19,12 @@ use App\Http\Controllers\VotesController;
 */
 
 //Route::apiResource('posts', PostsController::class);
+//AuthController
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/profile/{user_id}', [AuthController::class, 'getProfile']);
 
+//PostsController
 Route::get('/posts', [PostsController::class, 'index']);
 Route::get('/posts/{post}', [PostsController::class, 'show']);
 //Route::get('/posts/{post}', function (\App\Models\Post $post) {
@@ -30,25 +32,30 @@ Route::get('/posts/{post}', [PostsController::class, 'show']);
 //});
 Route::get('/posts/search/{search}', [PostsController::class, 'search']);
 
+//CommentsController
 Route::get('/comments/{post_id}', [CommentsController::class, 'index']);
 //Route::get('/comments/comment/{comment}', [CommentsController::class, 'show']);
 
-//Route::group(['middleware' => ['auth:sanctum', 'postMiddleware']], function () {
 Route::group(['middleware' => ['auth:sanctum']], function () {
     //這裡放需要驗證才能做的動作
+    //AuthController
     Route::get('/profile',[AuthController::class,'showProfile']);
     Route::patch('/profile',[AuthController::class,'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    //PostsController
     Route::post('/posts', [PostsController::class, 'store']);
     Route::patch('/posts/{post}', [PostsController::class, 'update']);
     Route::delete('/posts/{post}', [PostsController::class, 'destroy']);
 
+    //CommentsController
     Route::post('/comments/{post_id}', [CommentsController::class, 'store']);
     Route::patch('/comments/comment/{comment}', [CommentsController::class, 'update']);
     Route::delete('/comments/comment/{comment}', [CommentsController::class, 'destroy']);
 
-    Route::post('/votes/{post_id}/{vote}', [VotesController::class, 'vote']);
+    //VotesController
+//    Route::post('/votes/{post_id}/{vote}', [VotesController::class, 'vote']);
+    Route::post('/votes/{voteable_type}/{voteable_id}/{state}', [VotesController::class, 'vote']);
 });
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {

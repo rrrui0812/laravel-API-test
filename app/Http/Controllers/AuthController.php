@@ -123,8 +123,8 @@ class AuthController extends Controller
         $user = User::find($userId);
         $postCount = $user->posts()->count();
         $commentsCount=$user->comments()->count();
-        $likeCount = $user->votes()->where('state','like')->count();
-        $dislikeCount = $user->votes()->where('state','dislike')->count();
+        $likeCount = $user->votesCount()->where('state','like')->count();
+        $dislikeCount = $user->votesCount()->where('state','dislike')->count();
         $userData = [
             'name'=>$user->name,
             'avatar'=>$user->avatar,

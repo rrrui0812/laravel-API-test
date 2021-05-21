@@ -55,7 +55,11 @@ class User extends Authenticatable
 
     public function votes()
     {
-//        return $this->hasMany('\App\Models\Vote');
+        return $this->hasMany('\App\Models\Vote');
+    }
+
+    public function votesCount()
+    {
         return $this->hasManyThrough('\App\Models\Vote','\App\Models\Post');
     }
 }

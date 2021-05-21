@@ -21,8 +21,10 @@ class Post extends Model
 
     public function votes()
     {
-        return $this->hasMany('\App\Models\Vote');
+//        return $this->hasMany('\App\Models\Vote');
+        return $this->morphMany('\App\Models\Vote','voteable');
     }
+
 //    public function resolveRouteBinding($value, $field = null)
 //    {
 //        return $this->where('id', $value)->firstOrFail();

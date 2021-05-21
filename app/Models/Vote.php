@@ -19,5 +19,10 @@ class Vote extends Model
         return $this->belongsTo('\App\Models\Post');
     }
 
-    protected $fillable = ['post_id', 'state'];
+    public function voteable()
+    {
+        return $this->morphTo();
+    }
+
+    protected $fillable = ['voteable_type','voteable_id', 'state','user_id'];
 }
