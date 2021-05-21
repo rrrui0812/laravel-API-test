@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Post;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class PostsController extends Controller
@@ -239,11 +238,41 @@ class PostsController extends Controller
             ->orderBy('posts.id')
             ->get();
 
-        $comments = $post->comments()->where('post_id', $id)->get();
+        $commentLikeCount = DB::table('votes')
+            ->select('voteable_id', DB::raw('count(*) as like_count'))
+            ->where('voteable_type','App\Models\Comment')
+            ->where('state', '=', 'like')
+            ->groupBy('voteable_id');
+
+        $commentDislikeCount = DB::table('votes')
+            ->select('voteable_id', DB::raw('count(*) as dislike_count'))
+            ->where('voteable_type','App\Models\Comment')
+            ->where('state', '=', 'dislike')
+            ->groupBy('voteable_id');
+
+        $commentsData = DB::table('comments')
+            ->where('comments.post_id', '=', $id)
+            ->leftJoin('users', 'user_id', '=', 'users.id')
+            ->leftjoinSub($commentLikeCount, 'like_count', function ($join) {
+                $join->on('comments.id', '=', 'like_count.voteable_id');
+            })
+            ->leftjoinSub($commentDislikeCount, 'dislike_count', function ($join) {
+                $join->on('comments.id', '=', 'dislike_count.voteable_id');
+            })
+            ->select(
+                'comments.*',
+                'users.name',
+                'users.avatar',
+                DB::Raw('IFNULL( `like_count`.`like_count` , 0 ) as like_count'),
+                DB::Raw('IFNULL( `dislike_count`.`dislike_count` , 0 ) as dislike_count'),
+            )
+            ->orderBy('comments.id')
+            ->get();
+
 
         $response = [
             'post' => $postData,
-            'comments' => $comments
+            'comments' => $commentsData
         ];
 
         return response($response, Response::HTTP_OK);
