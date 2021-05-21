@@ -236,7 +236,7 @@ class PostsController extends Controller
                 DB::Raw('IFNULL( `dislike_count`.`dislike_count` , 0 ) as dislike_count'),
             )
             ->orderBy('posts.id')
-            ->get();
+            ->first();
 
         $commentLikeCount = DB::table('votes')
             ->select('voteable_id', DB::raw('count(*) as like_count'))
