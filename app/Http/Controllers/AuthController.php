@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use App\Models\User;
+use App\Models\Vote;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -116,28 +118,65 @@ class AuthController extends Controller
 
     public function getProfile($userId)
     {
-//        $profile = User::where('id', $userId)->select('name','avatar')->first();
-//        if (!$profile) {
-//            return response('Not Found', Response::HTTP_NOT_FOUND);
-//        }
         $user = User::find($userId);
-        $postCount = $user->posts()->count();
-        $commentsCount=$user->comments()->count();
-        $likeCount = $user->votesCount()->where('state','like')->count();
-        $dislikeCount = $user->votesCount()->where('state','dislike')->count();
-        $userData = [
-            'name'=>$user->name,
-            'avatar'=>$user->avatar,
-            'post_count'=>$postCount,
-            'comments_count'=>$commentsCount,
-            'like_count'=>$likeCount,
-            'dislike_count'=>$dislikeCount
-        ];
-        $posts=$user->posts()->paginate(10);
+        if (!$user) {
+            return response('Not Found', Response::HTTP_NOT_FOUND);
+        }
 
-        $response=[
-            'user'=>$userData,
-            'posts'=>$posts
+        $postCount = $user->posts()->count();
+        $commentsCount = $user->comments()->count();
+
+        $commentCount = DB::table('comments')
+            ->select('post_id', DB::raw('count(*) as comment_count'))
+            ->groupBy('post_id');
+
+        $likeCount = DB::table('votes')
+            ->select('voteable_id', DB::raw('count(*) as like_count'))
+            ->where('voteable_type','App\Models\Post')
+            ->where('state', '=', 'like')
+            ->groupBy('voteable_id');
+
+        $dislikeCount = DB::table('votes')
+            ->select('voteable_id', DB::raw('count(*) as dislike_count'))
+            ->where('voteable_type','App\Models\Post')
+            ->where('state', '=', 'dislike')
+            ->groupBy('voteable_id');
+
+        $posts = DB::table('posts')
+            ->leftJoin('users', 'user_id', '=', 'users.id')
+            ->leftjoinSub($commentCount, 'comment_count', function ($join) {
+                $join->on('posts.id', '=', 'comment_count.post_id');
+            })
+            ->leftjoinSub($likeCount, 'like_count', function ($join) {
+                $join->on('posts.id', '=', 'like_count.voteable_id');
+            })
+            ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
+                $join->on('posts.id', '=', 'dislike_count.voteable_id');
+            })
+            ->where('user_id',$userId)
+            ->select(
+                'posts.*',
+                'users.name',
+                'users.avatar',
+                DB::Raw('IFNULL( `comment_count`.`comment_count` , 0 ) as comment_count'),
+                DB::Raw('IFNULL( `like_count`.`like_count` , 0 ) as like_count'),
+                DB::Raw('IFNULL( `dislike_count`.`dislike_count` , 0 ) as dislike_count'),
+            )
+            ->orderBy('posts.id')
+            ->paginate(10);
+
+        $userData = [
+            'name' => $user->name,
+            'avatar' => $user->avatar,
+            'post_count' => $postCount,
+            'comments_count' => $commentsCount,
+            'like_count'=>'999',
+            'dislike_count'=>'999'
+        ];
+
+        $response = [
+            'user' => $userData,
+            'posts' => $posts
         ];
         return response($response, Response::HTTP_OK);
     }
