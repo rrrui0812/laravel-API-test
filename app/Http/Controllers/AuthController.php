@@ -170,8 +170,8 @@ class AuthController extends Controller
             'avatar' => $user->avatar,
             'post_count' => $postCount,
             'comments_count' => $commentsCount,
-            'like_count'=>'999',
-            'dislike_count'=>'999'
+            'like_count'=>999,
+            'dislike_count'=>999
         ];
 
         $response = [
