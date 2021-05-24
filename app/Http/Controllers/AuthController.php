@@ -123,8 +123,8 @@ class AuthController extends Controller
             return response('Not Found', Response::HTTP_NOT_FOUND);
         }
 
-        $postCount = $user->posts()->count();
-        $commentsCount = $user->comments()->count();
+        $userPostCount = $user->posts()->count();
+        $userCommentsCount = $user->comments()->count();
 
         $commentCount = DB::table('comments')
             ->select('post_id', DB::raw('count(*) as comment_count'))
@@ -132,13 +132,13 @@ class AuthController extends Controller
 
         $likeCount = DB::table('votes')
             ->select('voteable_id', DB::raw('count(*) as like_count'))
-            ->where('voteable_type','App\Models\Post')
+            ->where('voteable_type', 'App\Models\Post')
             ->where('state', '=', 'like')
             ->groupBy('voteable_id');
 
         $dislikeCount = DB::table('votes')
             ->select('voteable_id', DB::raw('count(*) as dislike_count'))
-            ->where('voteable_type','App\Models\Post')
+            ->where('voteable_type', 'App\Models\Post')
             ->where('state', '=', 'dislike')
             ->groupBy('voteable_id');
 
@@ -153,7 +153,7 @@ class AuthController extends Controller
             ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
                 $join->on('posts.id', '=', 'dislike_count.voteable_id');
             })
-            ->where('user_id',$userId)
+            ->where('user_id', $userId)
             ->select(
                 'posts.*',
                 'users.name',
@@ -165,19 +165,32 @@ class AuthController extends Controller
             ->orderBy('posts.id')
             ->paginate(10);
 
+        $userTotalLikeCount = Vote::whereHas('voteable', function ($voteModel) use ($user) {
+            $voteModel->where('user_id', $user->getKey());
+        })
+            ->where('state', 'like')
+            ->count();
+
+        $userTotalDislikeCount = Vote::whereHas('voteable', function ($voteModel) use ($user) {
+            $voteModel->where('user_id', $user->getKey());
+        })
+            ->where('state', 'dislike')
+            ->count();
+
         $userData = [
             'name' => $user->name,
             'avatar' => $user->avatar,
-            'post_count' => $postCount,
-            'comments_count' => $commentsCount,
-            'like_count'=>999,
-            'dislike_count'=>999
+            'post_count' => $userPostCount,
+            'comments_count' => $userCommentsCount,
+            'like_count' => $userTotalLikeCount,
+            'dislike_count' => $userTotalDislikeCount
         ];
 
         $response = [
             'user' => $userData,
             'posts' => $posts
         ];
+
         return response($response, Response::HTTP_OK);
     }
 
