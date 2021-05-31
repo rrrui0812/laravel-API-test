@@ -11,37 +11,37 @@ use Illuminate\Support\Facades\Auth;
 
 class VotesController extends Controller
 {
-    public function vote($voteableType, $voteableId, $state)
+    public function vote($votableType, $votableId, $state)
     {
-        switch ($voteableType) {
+        switch ($votableType) {
             case 'Post':
-                $voteable = Post::find($voteableId);
+                $votable = Post::find($votableId);
                 break;
             case 'Comment':
-                $voteable = Comment::find($voteableId);
+                $votable = Comment::find($votableId);
                 break;
         }
-        if (!$voteable) {
+        if (!$votable) {
             $response = [
-                'message' => $voteableType . ' Not Found.'
+                'message' => $votableType . ' Not Found.'
             ];
             return response($response, Response::HTTP_NOT_FOUND);
         }
         //多態關聯
-        $voted = $voteable->votes()->where('user_id', Auth::id())->first();
+        $voted = $votable->votes()->where('user_id', Auth::id())->first();
         if (!$voted) {
             $fields = [
                 'user_id' => Auth::id(),
                 'state' => $state
             ];
-            $voteable->votes()->create($fields);
-            $voted = $voteable->votes()->where('user_id', Auth::id())->first();
+            $votable->votes()->create($fields);
+            $voted = $votable->votes()->where('user_id', Auth::id())->first();
         } elseif ($voted->state != $state) {
             $fields = [
                 'state' => $state
             ];
             $voted->update($fields);
-            $voted = $voteable->votes()->where('user_id', Auth::id())->first();
+            $voted = $votable->votes()->where('user_id', Auth::id())->first();
         } elseif ($voted->state === $state) {
             $voted->delete();
             $voted = [
@@ -49,8 +49,8 @@ class VotesController extends Controller
             ];
         }
 
-        $likeCount = $voteable->votes()->where('state','like')->count();
-        $dislikeCount = $voteable->votes()->where('state','dislike')->count();
+        $likeCount = $votable->votes()->where('state','like')->count();
+        $dislikeCount = $votable->votes()->where('state','dislike')->count();
         $response = [
             'voted' => $voted,
             'like_count' => $likeCount,

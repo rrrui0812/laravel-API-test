@@ -131,16 +131,16 @@ class AuthController extends Controller
             ->groupBy('post_id');
 
         $likeCount = DB::table('votes')
-            ->select('voteable_id', DB::raw('count(*) as like_count'))
-            ->where('voteable_type', 'App\Models\Post')
+            ->select('votable_id', DB::raw('count(*) as like_count'))
+            ->where('votable_type', 'App\Models\Post')
             ->where('state', '=', 'like')
-            ->groupBy('voteable_id');
+            ->groupBy('votable_id');
 
         $dislikeCount = DB::table('votes')
-            ->select('voteable_id', DB::raw('count(*) as dislike_count'))
-            ->where('voteable_type', 'App\Models\Post')
+            ->select('votable_id', DB::raw('count(*) as dislike_count'))
+            ->where('votable_type', 'App\Models\Post')
             ->where('state', '=', 'dislike')
-            ->groupBy('voteable_id');
+            ->groupBy('votable_id');
 
         $posts = DB::table('posts')
             ->leftJoin('users', 'user_id', '=', 'users.id')
@@ -148,10 +148,10 @@ class AuthController extends Controller
                 $join->on('posts.id', '=', 'comment_count.post_id');
             })
             ->leftjoinSub($likeCount, 'like_count', function ($join) {
-                $join->on('posts.id', '=', 'like_count.voteable_id');
+                $join->on('posts.id', '=', 'like_count.votable_id');
             })
             ->leftjoinSub($dislikeCount, 'dislike_count', function ($join) {
-                $join->on('posts.id', '=', 'dislike_count.voteable_id');
+                $join->on('posts.id', '=', 'dislike_count.votable_id');
             })
             ->where('user_id', $userId)
             ->select(
@@ -165,17 +165,15 @@ class AuthController extends Controller
             ->orderBy('posts.id')
             ->paginate(10);
 
-        $userTotalLikeCount = Vote::whereHas('voteable', function ($voteModel) use ($user) {
-            $voteModel->where('user_id', $user->getKey());
-        })
-            ->where('state', 'like')
-            ->count();
+        $userTotalLikeCount = Vote::whereHas('votable', function ($voteModel) use ($user) {
+            $voteModel->where('user_id', $user->getKey())
+                ->where('state', 'like');
+        })->count();
 
-        $userTotalDislikeCount = Vote::whereHas('voteable', function ($voteModel) use ($user) {
-            $voteModel->where('user_id', $user->getKey());
-        })
-            ->where('state', 'dislike')
-            ->count();
+        $userTotalDislikeCount = Vote::whereHas('votable', function ($voteModel) use ($user) {
+            $voteModel->where('user_id', $user->getKey())
+                ->where('state', 'dislike');
+        })->count();
 
         $userData = [
             'name' => $user->name,

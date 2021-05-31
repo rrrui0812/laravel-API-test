@@ -19,10 +19,15 @@ class Vote extends Model
         return $this->belongsTo('\App\Models\Post');
     }
 
-    public function voteable()
+    public function comment()
+    {
+        return $this->belongsTo('\App\Models\Comment');
+    }
+
+    public function votable()
     {
         return $this->morphTo();
     }
 
-    protected $fillable = ['voteable_type','voteable_id', 'state','user_id'];
+    protected $fillable = ['votable_type', 'votable_id', 'state', 'user_id'];
 }

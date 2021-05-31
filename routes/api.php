@@ -18,7 +18,6 @@ use App\Http\Controllers\VotesController;
 |
 */
 
-//Route::apiResource('posts', PostsController::class);
 //AuthController
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -31,6 +30,7 @@ Route::get('/posts/{post}', [PostsController::class, 'show']);
 //    return $post;
 //});
 Route::get('/posts/search/{search}', [PostsController::class, 'search']);
+Route::get('/posts/test/{post}',[PostsController::class,'test']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     //這裡放需要驗證才能做的動作
@@ -51,7 +51,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     //VotesController
 //    Route::post('/votes/{post_id}/{vote}', [VotesController::class, 'vote']);
-    Route::post('/votes/{voteable_type}/{voteable_id}/{state}', [VotesController::class, 'vote']);
+    Route::post('/votes/{votable_type}/{votable_id}/{state}', [VotesController::class, 'vote']);
 });
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
