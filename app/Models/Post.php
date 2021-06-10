@@ -11,7 +11,7 @@ class Post extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'content', 'image'];
+    protected $fillable = ['title', 'content'];
 
 //    protected $casts = [
 //        'created_at' => 'datetime:Y-m-d H:i:s',
@@ -33,6 +33,11 @@ class Post extends Model
         return $this->morphMany('\App\Models\Vote', 'votable');
     }
 
+    public function images()
+    {
+        return $this->morphMany('\App\Models\Image', 'imageable');
+    }
+
     public function commentsVotes()
     {
         return $this->hasManyThrough(
@@ -42,10 +47,5 @@ class Post extends Model
             'votable_id'
         )->where('votable_type', Comment::class);
     }
-
-//    public function resolveRouteBinding($value, $field = null)
-//    {
-//        return $this->where('title', $value)->firstOrFail();
-//    }
 
 }

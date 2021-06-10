@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
+use App\Models\Image;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Post;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -66,23 +68,36 @@ class PostsController extends Controller
         $this->validate($request, [
             'title' => 'required',
             'content' => 'required',
-            'image' => 'nullable|mimes:jpg,jpeg,png|max:1024'
+            'images.*' => 'nullable|mimes:jpg,jpeg,png|max:1024'
         ]);
-
-        if ($request->hasFile('image')) {
-            $image = $request->file('image')->store('images');
-        } else {
-            $image = 'null';
-        }
 
         $content = [
             'title' => $request->input('title'),
-            'content' => $request->input('content'),
-            'image' => $image
+            'content' => $request->input('content')
         ];
         $post = auth()->user()->posts()->create($content);
 
-        return response($post, Response::HTTP_CREATED);
+        $images = $request->file('images');
+        if ($request->hasFile('images')) {
+            foreach ($images as $key => $value) {
+                $path = $images[$key]->store('images');
+                $content = [
+                    'user_id' => Auth::id(),
+                    'title' => $key,
+                    'path' => $path
+                ];
+                $post->images()->create($content);
+            }
+        }
+
+        $getImages = $post->images()->select('id', 'title', 'path')->get();
+
+        $response = [
+            'post' => $post,
+            'images' => $getImages
+        ];
+
+        return response($response, Response::HTTP_CREATED);
     }
 
     public function show($id)
@@ -165,8 +180,11 @@ class PostsController extends Controller
             ->orderBy('comments.id')
             ->get();
 
+        $images = $post->images()->select('id', 'title', 'path')->get();
+
         $response = [
             'post' => $postData,
+            'images' => $images,
             'comments' => $commentsData
         ];
         return response($response, Response::HTTP_OK);
@@ -283,29 +301,25 @@ class PostsController extends Controller
 
     public function destroy($id)
     {
-        $post = auth()->user()->posts()->find($id);
+        $post = auth()->user()->posts->find($id);
 
-        if ($post->image) {
-            Storage::disk('public')->delete($post->image);
+        $post->votes->each->delete();
+        $post->commentsVotes->each->delete();
+        $post->comments->each->delete();
+
+        $images = $post->images;
+        if (!$images->isEmpty()) {
+            foreach ($images as $image) {
+                Storage::disk('public')->delete($image->path);
+                $image->delete();
+            }
         }
-
-        Vote::where('votable_type', Post::class)
-            ->where('votable_id', $post->getKey())
-            ->delete();
-
-        $commentsVotes = $post->commentsVotes;
-        foreach ($commentsVotes as $commentVote) {
-            $commentVote->delete();
-        }
-
-        $post->comments()->where('post_id', $id)->delete();
 
         $post->delete($id);
 
         $response = [
             'message' => 'Post Has Deleted.'
         ];
-
         return response($response, Response::HTTP_OK);
     }
 
@@ -360,22 +374,8 @@ class PostsController extends Controller
         return response($postData, Response::HTTP_OK);
     }
 
-    public function test($postId)
+    public function test($id)
     {
-        $post = Post::find($postId);
-        $commentsVotes = $post->commentsVotes;
-//        foreach ($commentsVotes as $commentVote) {
-//            $commentVote->delete();
-//        }
 
-//        $postVotes = Vote::where('votable_type', Post::class)
-//            ->where('votable_id', $post->getKey())
-//            ->delete();
-
-        $response = [
-//            'test' => $postVotes
-        ];
-
-        return $response;
     }
 }

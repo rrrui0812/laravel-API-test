@@ -30,13 +30,13 @@ Route::get('/posts/{post}', [PostsController::class, 'show']);
 //    return $post;
 //});
 Route::get('/posts/search/{search}', [PostsController::class, 'search']);
-Route::get('/posts/test/{post}',[PostsController::class,'test']);
+Route::get('/posts/test/{post_id}', [PostsController::class, 'test']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    //這裡放需要驗證才能做的動作
+    //這裡放需要Token才能做的動作
     //AuthController
-    Route::get('/profile',[AuthController::class,'showProfile']);
-    Route::patch('/profile',[AuthController::class,'updateProfile']);
+    Route::get('/profile', [AuthController::class, 'showProfile']);
+    Route::patch('/profile', [AuthController::class, 'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     //PostsController
