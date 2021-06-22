@@ -19,10 +19,29 @@ class CommentMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $commentId=$request->route('comment');
-        if (Auth::id() === Comment::find($commentId)->user_id) {
+//        $commentId=$request->route('comment');
+//        if (Auth::id() === Comment::find($commentId)->user_id) {
+//            return $next($request);
+//        }
+//        return response('Not Found.',Response::HTTP_NOT_FOUND);
+
+        $comment = Comment::find($request->route('comment'));
+
+        if (!$comment || Auth::id() != $comment->user_id) {
+            $response = [
+                'message' => 'Not Found.'
+            ];
+            return response($response, Response::HTTP_NOT_FOUND);
+        }
+
+        if (Auth::id() === $comment->user_id) {
             return $next($request);
         }
-        return response('Not Found.',Response::HTTP_NOT_FOUND);
+
+        $response = [
+            'message' => 'Not Found.'
+        ];
+        return response($response, Response::HTTP_NOT_FOUND);
+
     }
 }

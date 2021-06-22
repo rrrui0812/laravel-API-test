@@ -20,16 +20,16 @@ class PostMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $postId = $request->route('post');
+        $post = Post::find($request->route('post'));
 
-        if (!Post::find($postId)) {
+        if (!$post || Auth::id() != $post->user_id) {
             $response = [
                 'message' => 'Not Found.'
             ];
             return response($response, Response::HTTP_NOT_FOUND);
         }
 
-        if (Auth::id() === Post::find($postId)->user_id) {
+        if (Auth::id() === $post->user_id) {
             return $next($request);
         }
 

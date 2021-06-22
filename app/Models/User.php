@@ -57,4 +57,48 @@ class User extends Authenticatable
     {
         return $this->hasMany('\App\Models\Vote');
     }
+
+    public function totalLikePostsVotes()
+    {
+        return $this->HasManyThrough(
+            Vote::class,
+            Post::class,
+            'user_id',
+            'votable_id'
+        )->where('votable_type', Post::class)
+            ->where('state', 'like');
+    }
+
+    public function totalDislikePostsVotes()
+    {
+        return $this->HasManyThrough(
+            Vote::class,
+            Post::class,
+            'user_id',
+            'votable_id'
+        )->where('votable_type', Post::class)
+            ->where('state', 'dislike');
+    }
+
+    public function totalLikeCommentsVotes()
+    {
+        return $this->HasManyThrough(
+            Vote::class,
+            Comment::class,
+            'user_id',
+            'votable_id'
+        )->where('votable_type', Comment::class)
+            ->where('state', 'like');
+    }
+
+    public function totalDislikeCommentsVotes()
+    {
+        return $this->HasManyThrough(
+            Vote::class,
+            Comment::class,
+            'user_id',
+            'votable_id'
+        )->where('votable_type', Comment::class)
+            ->where('state', 'dislike');
+    }
 }

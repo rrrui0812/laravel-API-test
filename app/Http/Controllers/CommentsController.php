@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Comment;
+use App\Http\Resources\Comment as CommentResource;
 
 class CommentsController extends Controller
 {
@@ -25,7 +26,7 @@ class CommentsController extends Controller
 
         $comment = auth()->user()->comments()->create($content);
 
-        return response($comment, Response::HTTP_CREATED);
+        return CommentResource::make($comment)->response()->setStatusCode(Response::HTTP_CREATED);
     }
 
     public function update(Request $request, $id)
@@ -38,13 +39,13 @@ class CommentsController extends Controller
             'content' => $request->input('content')
         ];
         $comment->update($content);
-        return response($comment, Response::HTTP_OK);
+        return CommentResource::make($comment)->response()->setStatusCode(Response::HTTP_OK);
     }
 
     public function destroy($id)
     {
         $comment = auth()->user()->comments()->find($id);
         $comment->delete($id);
-        return response('Data deleted', Response::HTTP_OK);
+        return response('Comment has deleted', Response::HTTP_OK);
     }
 }

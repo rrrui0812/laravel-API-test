@@ -6,6 +6,9 @@ use App\Http\Controllers\PostsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\VotesController;
+use App\Http\Controllers\ProfileController;
+
+use App\Http\Resources\PostResource;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,7 +24,9 @@ use App\Http\Controllers\VotesController;
 //AuthController
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/profile/{user_id}', [AuthController::class, 'getProfile']);
+
+//ProfileController
+Route::get('/profile/{user_id}', [ProfileController::class, 'show']);
 
 //PostsController
 Route::get('/posts', [PostsController::class, 'index']);
@@ -30,14 +35,25 @@ Route::get('/posts/{post}', [PostsController::class, 'show']);
 //    return $post;
 //});
 Route::get('/posts/search/{search}', [PostsController::class, 'search']);
+//測試用route
 Route::get('/posts/test/{post_id}', [PostsController::class, 'test']);
 
+//Route::get('/posts/test/{post_id}', function () {
+//    return PostResource::collection(\App\Models\Post::paginate(5));
+//});
+//Route::get('/posts/test/{post_id}', function () {
+//    return new PostResource(\App\Models\Post::paginate(5));
+//});
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
+//    Route::get('/posts/test/{post_id}', [PostsController::class, 'test']);
+
     //這裡放需要Token才能做的動作
     //AuthController
-    Route::get('/profile', [AuthController::class, 'showProfile']);
-    Route::patch('/profile', [AuthController::class, 'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    //ProfileController
+    Route::patch('/profile', [ProfileController::class, 'update']);
 
     //PostsController
     Route::post('/posts', [PostsController::class, 'store']);
